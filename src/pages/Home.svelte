@@ -1,5 +1,6 @@
 <script>
 import { getContext } from 'svelte'
+import ApiService from '../services/api_service'
 
 let router = getContext('ROUTER')
 
@@ -32,9 +33,25 @@ async function onClickValid() {
   if (! validForm()) return
   gui.btnValid.isLoading = true
   gui.btnValid.isDisabled = true
-  //
-  // TODO: Waiting for backend REST API : /api/channel/create
-  //
+
+
+  let data = {
+    nickname: form.nickname
+  }
+
+  let status, result
+  [status, result] = await ApiService.createChannel(data)
+  if (status === 200) {
+    console.log('Request success:')
+    console.log(result)
+  }
+  else {
+    console.log('Api Error')
+    throw 'API error'
+  }
+
+
+
 }
 </script>
 
