@@ -2,6 +2,7 @@
 import { getContext } from 'svelte'
 import LocalStorageService from '../services/local_storage_service'
 import ApiService from '../services/api_service'
+import { channel } from '../stores/data'
 
 let router = getContext('ROUTER')
 
@@ -52,6 +53,7 @@ async function onClickValid() {
     console.log('Request success:')
     console.log(result)
     LocalStorageService.setUser(result.user)
+    $channel = result.channel
   }
   else {
     console.log('Api Error')
