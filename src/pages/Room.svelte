@@ -23,7 +23,7 @@ let form = {
 // ----------------------------------------------------------
 // WebSocket management
 // ----------------------------------------------------------
-const endpoint = `${Config.web.sock}`
+const endpoint = `${Config.web.sock}?u=${user.id}`
 
 let sock = new WebSocket(endpoint)
 
