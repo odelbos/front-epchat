@@ -50,13 +50,12 @@ async function onClickValid() {
   let status, result
   [status, result] = await ApiService.createChannel(data)
   if (status === 200) {
-    console.log('Request success:')
-    console.log(result)
     LocalStorageService.setUser(result.user)
     $channel = result.channel
+    router.navigate('room')
   }
   else {
-    console.log('Api Error')
+    // TODO: Properly manage the error
     console.log(result)
     throw 'API error'
   }
