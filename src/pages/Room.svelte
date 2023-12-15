@@ -1,8 +1,8 @@
 <script>
 import { getContext, onMount } from 'svelte'
+import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
 import { channel } from '../stores/data'
-
 
 let router = getContext('ROUTER')
 
@@ -17,6 +17,43 @@ if ($channel === null) router.navigate('home')
 
 let form = {
   msg: '',
+}
+
+
+// ----------------------------------------------------------
+// WebSocket management
+// ----------------------------------------------------------
+const endpoint = `${Config.web.sock}`
+
+let sock = new WebSocket(endpoint)
+
+sock.onopen = function(event) {
+  console.log("[open] Connection established")
+  console.log(event)
+  console.log("Sending ping to server")
+  sock.send("ping")
+}
+
+sock.onmessage = function(event) {
+  console.log('[message data]:')
+  console.log(event)
+}
+
+sock.onclose = function(event) {
+  if (event.wasClean) {
+    console.log("[close] Connection closed cleanly")
+    console.log(event)
+  } else {
+    // e.g. server process killed or network down
+    // event.code is usually 1006 in this case
+    console.log('[close] Connection died')
+    console.log(event)
+  }
+}
+
+sock.onerror = function(error) {
+  console.log("[error] : ")
+  console.log(error)
 }
 </script>
 
