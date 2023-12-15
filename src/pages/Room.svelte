@@ -1,5 +1,5 @@
 <script>
-import { getContext, onMount } from 'svelte'
+import { getContext } from 'svelte'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
 import { channel } from '../stores/data'
