@@ -1,12 +1,19 @@
 <script>
 import { getContext } from 'svelte'
+import LocalStorageService from '../services/local_storage_service'
 import ApiService from '../services/api_service'
 
 let router = getContext('ROUTER')
 
+let user = null
+if (LocalStorageService.hasUser()) {
+  user = LocalStorageService.getUser()
+}
+
 let form = {
   nickname: '',
 }
+if (user !== null) form.nickname = user.nickname
 
 let gui = {
   btnValid: {
@@ -34,24 +41,23 @@ async function onClickValid() {
   gui.btnValid.isLoading = true
   gui.btnValid.isDisabled = true
 
-
   let data = {
     nickname: form.nickname
   }
+  if (user !== null) data.user_id = user.id
 
   let status, result
   [status, result] = await ApiService.createChannel(data)
   if (status === 200) {
     console.log('Request success:')
     console.log(result)
+    LocalStorageService.setUser(result.user)
   }
   else {
     console.log('Api Error')
+    console.log(result)
     throw 'API error'
   }
-
-
-
 }
 </script>
 
