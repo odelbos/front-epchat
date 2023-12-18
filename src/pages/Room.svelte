@@ -32,6 +32,16 @@ sock.onopen = function(event) {
   console.log(event)
   console.log("Sending ping to server")
   sock.send("ping")
+
+  let data = {
+    channel_id: $channel.id,
+    event: "ch_join",
+    data: {
+      user_id: user.id,
+    }
+  }
+  let json = JSON.stringify(data)
+  sock.send(json)
 }
 
 sock.onmessage = function(event) {
