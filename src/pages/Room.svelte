@@ -12,6 +12,8 @@ if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
+let members = []
+
 // NOTE: Should never happens when entering this page
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
@@ -59,16 +61,25 @@ chann.onClose = (data) => {
   console.log(data)
 }
 
+chann.on('ch_members', (data) => { event_ch_members(data) })
+
 sock.connect()
 
+// -----
+
+function event_ch_members(data) {
+  console.log('[Client] ch_member')
+  console.log(data)
+  members = data.members
+}
 </script>
 
 
 <div class="room">
   <div class="users block">
-    <p>User 1</p>
-    <p>User 2</p>
-    <p>User 3</p>
+    {#each members as member}
+      <p>{member.nickname}</p>
+    {/each}
   </div>
 
   <div class="messages block">
