@@ -63,6 +63,8 @@ chann.onClose = (data) => {
 
 chann.on('ch_members', (data) => { event_ch_members(data) })
 
+chann.on('ch_member_join', (data) => { event_ch_member_join(data) })
+
 sock.connect()
 
 // -----
@@ -71,6 +73,12 @@ function event_ch_members(data) {
   console.log('[Client] ch_member')
   console.log(data)
   members = data.members
+}
+
+function event_ch_member_join(data) {
+  console.log('[Client] ch_member')
+  console.log(data)
+  members = [...members, data.member]
 }
 </script>
 
