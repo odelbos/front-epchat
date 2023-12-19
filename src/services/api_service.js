@@ -19,6 +19,16 @@ export default class ApiService {
     return ApiService.#buildResponse(response)
   }
 
+  static async joinChannel(data) {
+    let url = Config.api.url + 'channels/join'
+    let response = await fetch(url, {
+      method: 'POST',
+      headers: ApiService.prepare_headers(),
+      body: JSON.stringify(data)
+    })
+    return ApiService.#buildResponse(response)
+  }
+
   // -----
 
   static async #buildResponse(response) {
