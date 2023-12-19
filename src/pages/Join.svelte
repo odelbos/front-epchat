@@ -3,6 +3,7 @@ import { getContext } from 'svelte'
 import LocalStorageService from '../services/local_storage_service'
 import ApiService from '../services/api_service'
 import { channel } from '../stores/data'
+import Nickname from '../components/Nickname.svelte'
 
 let router = getContext('ROUTER')
 export let request
@@ -14,39 +15,9 @@ if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
-let form = {
-  nickname: '',
-}
-if (user !== null) form.nickname = user.nickname
-
-let gui = {
-  btnValid: {
-    isLoading: false,
-    isDisabled: false,
-  },
-  nickname: {
-    invalid: false,
-    msg: '',
-  },
-}
-
-function validForm() {
-  if (form.nickname === null || form.nickname.trim().length < 2) {
-    gui.nickname.msg = 'You must provide a nickname of more than 1 character'
-    gui.nickname.invalid = true
-    return false
-  }
-  gui.nickname.invalid = false
-  return true
-}
-
-async function onClickValid() {
-  if (! validForm()) return
-  gui.btnValid.isLoading = true
-  gui.btnValid.isDisabled = true
-
+async function onClickValid(e) {
   let data = {
-    nickname: form.nickname,
+    nickname: e.detail.nickname,
     channel_id: channel_id,
   }
   if (user !== null) data.user_id = user.id
@@ -69,18 +40,5 @@ async function onClickValid() {
 
 
 <div class="container mt-40">
-  <label for="nickname-field" class="form-label">Nickname <sup class="required">*</sup></label>
-  <input id="nickname-field" type="text" class="form-control" class:is-invalid={gui.nickname.invalid} bind:value={form.nickname}/>
-  <div class="invalid-msg">{gui.nickname.msg}</div>
-</div>
-
-<div class="container mt-40 text-center">
-  <button class="btn btn-primary" type="button" on:click={onClickValid} disabled={form.nickname === '' || gui.btnValid.isDisabled}>
-    {#if gui.btnValid.isLoading}
-      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-      <span class="visually-hidden">Loading...</span>
-    {:else}
-      Join Chat Room
-    {/if}
-  </button>
+  <Nickname btnTitle="Join Chat Room" on:click-valid={onClickValid}/>
 </div>
