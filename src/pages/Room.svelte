@@ -3,6 +3,7 @@ import { getContext } from 'svelte'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
 import { channel } from '../stores/data'
+import Socket from '../lib/socket'
 
 let router = getContext('ROUTER')
 
@@ -25,46 +26,41 @@ let form = {
 // ----------------------------------------------------------
 const endpoint = `${Config.web.sock}?u=${user.id}`
 
-let sock = new WebSocket(endpoint)
+let sock = new Socket(endpoint)
+let chann = sock.channel($channel.id, {})
 
-sock.onopen = function(event) {
-  console.log("[open] Connection established")
-  console.log(event)
-  console.log("Sending ping to server")
-  sock.send("ping")
-
-  let data = {
-    channel_id: $channel.id,
-    event: "ch_join",
-    data: {
-      user_id: user.id,
-    }
-  }
-  let json = JSON.stringify(data)
-  sock.send(json)
+sock.onOpen = (_event) => {
+  console.log('[Client] Socket Open')
+  // When the websocket is connected try to join the channel
+  chann.join({user_id: user.id})
 }
 
-sock.onmessage = function(event) {
-  console.log('[message data]:')
+sock.onClose = (event) => {
+  console.log('[Client] Socket Close')
   console.log(event)
 }
 
-sock.onclose = function(event) {
-  if (event.wasClean) {
-    console.log("[close] Connection closed cleanly")
-    console.log(event)
-  } else {
-    // e.g. server process killed or network down
-    // event.code is usually 1006 in this case
-    console.log('[close] Connection died')
-    console.log(event)
-  }
-}
-
-sock.onerror = function(error) {
-  console.log("[error] : ")
+sock.onError = (error) => {
+  console.log('[Client] Socket Error')
   console.log(error)
 }
+
+// -----
+
+chann.onJoin = (data) => {
+  console.log('[Client] Join channel')
+  console.log(data)
+  console.log('--> push ch_members')
+  chann.push('ch_members')
+}
+
+chann.onClose = (data) => {
+  console.log('[Client] Channel has been closed')
+  console.log(data)
+}
+
+sock.connect()
+
 </script>
 
 
