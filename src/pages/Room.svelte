@@ -69,6 +69,8 @@ chann.on('ch_members', (data) => { event_ch_members(data) })
 
 chann.on('ch_member_join', (data) => { event_ch_member_join(data) })
 
+chann.on('ch_member_leave', (data) => { event_ch_member_leave(data) })
+
 chann.on('ch_msg', (data) => { event_ch_msg(data) })
 
 sock.connect()
@@ -82,9 +84,15 @@ function event_ch_members(data) {
 }
 
 function event_ch_member_join(data) {
-  console.log('[Client] ch_member')
+  console.log('[Client] ch_member_join')
   console.log(data)
   members = [...members, data.member]
+}
+
+function event_ch_member_leave(data) {
+  console.log('[Client] ch_member_leave')
+  console.log(data)
+  members = members.filter((u) => u.id !== data.user.id)
 }
 
 function event_ch_msg(data) {
