@@ -13,6 +13,7 @@ if (LocalStorageService.hasUser()) {
 }
 
 let members = []
+let messages = []
 
 // NOTE: Should never happens when entering this page
 if (user === null) router.navigate('home')
@@ -65,6 +66,8 @@ chann.on('ch_members', (data) => { event_ch_members(data) })
 
 chann.on('ch_member_join', (data) => { event_ch_member_join(data) })
 
+chann.on('ch_msg', (data) => { event_ch_msg(data) })
+
 sock.connect()
 
 // -----
@@ -80,6 +83,44 @@ function event_ch_member_join(data) {
   console.log(data)
   members = [...members, data.member]
 }
+
+function event_ch_msg(data) {
+  console.log("[Client] ch_msg")
+  let msg = {
+    id: data.from.id,
+    nickname: data.from.nickname,
+    msg: data.msg,
+    at: data.at
+  }
+  messages = [...messages, msg]
+
+  // TODO: Auto-Scroll the message list
+}
+
+// -----
+
+let shiftKeyOn = false
+
+function handleKeyUp(event) {
+  if (event.key === 'Shift') shiftKeyOn = false
+}
+
+function handleKeyDown(event) {
+  if (event.key === 'Shift') {
+    shiftKeyOn = true
+  }
+  else if (event.key === 'Enter' && ! shiftKeyOn) {
+    if (form.msg.trim().length === 0) return
+    let data = {
+      msg: form.msg,
+    }
+    console.log('-----> send ch_msg')
+    chann.push("ch_msg", data)
+
+    // NOTE: Wait before cleaning textarea otherwise the return line stay there
+    setTimeout(() => {form.msg = ''}, 100)
+  }
+}
 </script>
 
 
@@ -91,18 +132,16 @@ function event_ch_member_join(data) {
   </div>
 
   <div class="messages block">
-    <div class="msg">
-      <p>User 1 at 1768595</p>
-      <pre>message</pre>
-    </div>
-    <div class="msg me">
-      <p>User 2 at 1768595</p>
-      <pre>message</pre>
-    </div>
+    {#each messages as msg}
+      <div class="msg" class:me={msg.id === user.id}>
+        <p>{msg.nickname} at {msg.at}</p>
+        <pre>{msg.msg}</pre>
+      </div>
+    {/each}
   </div>
 
   <div class="ipt block">
-    <textarea rows="4" bind:value={form.msg}></textarea>
+    <textarea rows="4" bind:value={form.msg} on:keydown={handleKeyDown} on:keyup={handleKeyUp}></textarea>
   </div>
 </div>
 
