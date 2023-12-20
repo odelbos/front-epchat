@@ -57,7 +57,6 @@ sock.onError = (error) => {
 chann.onJoin = (data) => {
   console.log('[Client] Join channel')
   console.log(data)
-  console.log('--> push ch_members')
   chann.push('ch_members')
 }
 
