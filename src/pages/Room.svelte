@@ -19,6 +19,10 @@ let messages = []
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
 
+let dom = {
+  messages: null,
+}
+
 let form = {
   msg: '',
 }
@@ -94,7 +98,8 @@ function event_ch_msg(data) {
   }
   messages = [...messages, msg]
 
-  // TODO: Auto-Scroll the message list
+  // NOTE: Wait redraw before auto-scrolling the message list
+  setTimeout(() => {dom.messages.scrollTop = dom.messages.scrollHeight}, 100)
 }
 
 // -----
@@ -131,7 +136,7 @@ function handleKeyDown(event) {
     {/each}
   </div>
 
-  <div class="messages block">
+  <div class="messages block" bind:this={dom.messages}>
     {#each messages as msg}
       <div class="msg" class:me={msg.id === user.id}>
         <p>{msg.nickname} at {msg.at}</p>
