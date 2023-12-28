@@ -1,7 +1,8 @@
 <script>
-import { getContext } from 'svelte'
+import { getContext, onMount } from 'svelte'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
+import { emit } from '../stores/bus'
 import { channel } from '../stores/data'
 import Socket from '../lib/socket'
 
@@ -18,6 +19,10 @@ let messages = []
 // NOTE: Should never happens when entering this page
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
+
+onMount(() => {
+  emit('layout', {event: 'channel', channel_id: $channel.id})
+})
 
 let dom = {
   messages: null,
