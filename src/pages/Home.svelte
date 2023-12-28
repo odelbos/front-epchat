@@ -12,6 +12,9 @@ if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
+/**
+ * @param {CustomEvent} e (only to disable LSP warning)
+ */
 async function onClickValid(e) {
   let data = {
     nickname: e.detail.nickname
