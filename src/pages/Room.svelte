@@ -5,6 +5,7 @@ import LocalStorageService from '../services/local_storage_service'
 import { emit } from '../stores/bus'
 import { channel } from '../stores/data'
 import Socket from '../lib/socket'
+import Modal from '../components/Modal.svelte'
 
 let router = getContext('ROUTER')
 
@@ -24,8 +25,17 @@ onMount(() => {
   emit('layout', {event: 'channel', channel_id: $channel.id})
 })
 
+function onClickGotoHome() {
+  router.navigate('home')
+}
+
+let gui = {
+  isChannelClosed: false,
+}
+
 let dom = {
   messages: null,
+  modal: null,
 }
 
 let form = {
@@ -68,6 +78,19 @@ chann.onJoin = (data) => {
 chann.onClose = (data) => {
   console.log('[Client] Channel has been closed')
   console.log(data)
+
+  if (data.reason === 'ch_no_activity') {
+    // TODO: Set the message
+    console.log('Closed because of inactivity')
+  }
+  else {
+    console.log('Unknown reason')
+  }
+
+  gui.isChannelClosed = true
+  dom.modal.open()
+
+  // TODO: Close the websocket?
 }
 
 chann.on('ch_members', (data) => { event_ch_members(data) })
@@ -143,9 +166,14 @@ function handleKeyDown(event) {
 
 <div class="room">
   <div class="users block">
-    {#each members as member}
-      <p>{member.nickname}</p>
-    {/each}
+    {#if gui.isChannelClosed}
+      <p class="closed">Room Closed</p>
+      <p class="mt-20 text-italic text-sm">No activity since 10mn</p>
+    {:else}
+      {#each members as member}
+        <p>{member.nickname}</p>
+      {/each}
+    {/if}
   </div>
 
   <div class="messages block" bind:this={dom.messages}>
@@ -157,10 +185,20 @@ function handleKeyDown(event) {
     {/each}
   </div>
 
-  <div class="ipt block">
-    <textarea rows="4" bind:value={form.msg} on:keydown={handleKeyDown} on:keyup={handleKeyUp}></textarea>
-  </div>
+  {#if gui.isChannelClosed}
+    <div class="link-hp">
+      <button class="btn btn-primary" type="button" on:click={onClickGotoHome}>Go to HomePage</button>
+    </div>
+  {:else}
+    <div class="ipt block">
+      <textarea rows="4" bind:value={form.msg} on:keydown={handleKeyDown} on:keyup={handleKeyUp}></textarea>
+    </div>
+  {/if}
 </div>
+
+<Modal bind:this={dom.modal} header={true} footer={true} overlayClose={true} title="Room Closed">
+  <p class="mt-20">The chat rooom has been closed be the server because of reaching 10mn of inactivity.</p>
+</Modal>
 
 
 <style lang="sass">
@@ -187,6 +225,12 @@ p
 .users
   grid-column: 1
   grid-row: 1 / 3
+
+  p.closed
+    margin-top: 20px
+    color: white
+    background: red
+    text-align: center
 
 .messages
   grid-column: 2
@@ -219,4 +263,8 @@ p
   p
     text-align: right
     color: black
+
+.link-hp
+  text-align: center
+  padding-top: 10px
 </style>
