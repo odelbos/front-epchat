@@ -1,6 +1,32 @@
+<script>
+import Config from '../config'
+import { subscribe } from '../stores/bus'
+
+let headerTitle = 'EpChat'
+let channelId = null
+
+function onClickRoomLink(_e) {
+  let url = Config.web.url + "join/" + channelId
+  navigator.clipboard.writeText(url)
+}
+
+subscribe('layout', (_topic, data) => {
+  if (data.event === 'channel') {
+    headerTitle = 'Room: ' + data.channel_id.substring(0, 8)
+    channelId = data.channel_id
+  }
+})
+</script>
+
+
 <div class="wrapper">
   <header>
-    <p>EpChat</p>
+    <!-- <p>EpChat</p> -->
+    {#if channelId !== null}
+      <p class="clip" on:click={onClickRoomLink}>{headerTitle}</p>
+    {:else}
+      <p>{headerTitle}</p>
+    {/if}
   </header>
   <main>
     <slot/>
@@ -23,6 +49,9 @@
 
     p
       margin-top: 5px
+
+    p.clip
+      cursor: pointer
 
   main
     padding: 20px
