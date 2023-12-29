@@ -1,5 +1,5 @@
 <script>
-import { getContext, onMount } from 'svelte'
+import { getContext } from 'svelte'
 import { emit, subscribe } from '../stores/bus'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
@@ -23,10 +23,6 @@ if ($channel === null) router.navigate('home')
 
 console.log($channel)
 // -----
-
-onMount(() => {
-  emit('layout', {event: 'room_header', channel: $channel})
-})
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_invit') {
@@ -89,6 +85,7 @@ sock.onError = (error) => {
 chann.onJoin = (data) => {
   console.log('[Client] Join channel')
   console.log(data)
+  emit('layout', {event: 'room_header', channel: $channel})
   chann.push('ch_members')
 }
 
