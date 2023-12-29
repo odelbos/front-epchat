@@ -6,25 +6,26 @@ import LocalStorageService from '../services/local_storage_service'
 let headerTitle = 'EpChat'
 let channel = null
 let isOwner = false
+let allReadySubscirbe = false
 
 let user = null
 if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
-//
-// TODO: Becarefull to multiple of subsriptions
-//
-subscribe('layout', (_topic, data) => {
-  if (data.event === 'room_header') {
-    channel = data.channel
-    headerTitle = 'Room: ' + data.channel.id.substring(0, 8)
-    if (user !== null) {
-      isOwner = (channel.owner_id === user.id)
+if ( ! allReadySubscirbe) {
+  subscribe('layout', (_topic, data) => {
+    if (data.event === 'room_header') {
+      channel = data.channel
+      headerTitle = 'Room: ' + data.channel.id.substring(0, 8)
+      if (user !== null) {
+        isOwner = (channel.owner_id === user.id)
+      }
+      // TODO: user === null should never happens here
     }
-    // TODO: user === null should never happens here
-  }
-})
+    allReadySubscirbe = true
+  })
+}
 
 // -----
 
