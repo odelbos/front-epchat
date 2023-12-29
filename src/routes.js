@@ -18,7 +18,7 @@ const routes = [
     component: Room,                        // Implicit route name : room
   },
   {
-    path: '/join/:channel_id',
+    path: '/join/:token_id',
     layout: DefaultLayout,
     component: Join,                        // Implicit route name : join
   },

@@ -8,7 +8,7 @@ import Nickname from '../components/Nickname.svelte'
 let router = getContext('ROUTER')
 export let request
 
-let channel_id = request.params.channel_id
+let token_id = request.params.token_id
 
 let user = null
 if (LocalStorageService.hasUser()) {
@@ -18,7 +18,7 @@ if (LocalStorageService.hasUser()) {
 async function onClickValid(e) {
   let data = {
     nickname: e.detail.nickname,
-    channel_id: channel_id,
+    token_id: token_id,
   }
   if (user !== null) data.user_id = user.id
 
