@@ -80,7 +80,7 @@ sock.onOpen = (_event) => {
     chann.push('ch_join', {user_id: user.id})
   }
   else {
-    chann.push('ch_join_with_token', {user_id: user.id, token: '--token--'})
+    chann.push('ch_join_with_token', {user_id: user.id, token: $channel.token})
   }
 }
 
