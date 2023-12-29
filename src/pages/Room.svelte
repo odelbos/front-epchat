@@ -21,34 +21,43 @@ let messages = []
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
 
-console.log($channel)
 // -----
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_invit') {
-    console.log('Receive layout.click_invit event, channel:', data.channel_id)
+    chann.push('adm_invit_link', {channel_id: $channel.id})
   }
 })
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_close') {
-    console.log('Receive layout.click_close event, channel:', data.channel_id)
+    console.log('Room receive layout.click_close event, channel:', data.channel_id)
+    // TODO: Implement 'layout.click_close' event
   }
 })
 
 // -----
 
-function onClickGotoHome() {
+async function onClickGotoHome() {
   router.navigate('home')
 }
 
+async function onClickCopy() {
+  navigator.clipboard.writeText(gui.invitLink)
+  dom.invitLinkModal.close()
+}
+
+// -----
+
 let gui = {
   isChannelClosed: false,
+  invitLink: '',
 }
 
 let dom = {
   messages: null,
-  modal: null,
+  closeModal: null,
+  invitLinkModal: null,
 }
 
 let form = {
@@ -67,7 +76,12 @@ let chann = sock.channel($channel.id, {})
 sock.onOpen = (_event) => {
   console.log('[Client] Socket Open')
   // When the websocket is connected try to join the channel
-  chann.join({user_id: user.id})
+  if ($channel.owner_id === user.id) {
+    chann.push('ch_join', {user_id: user.id})
+  }
+  else {
+    chann.push('ch_join_with_token', {user_id: user.id, token: '--token--'})
+  }
 }
 
 sock.onClose = (event) => {
@@ -102,7 +116,7 @@ chann.onClose = (data) => {
   }
 
   gui.isChannelClosed = true
-  dom.modal.open()
+  dom.closeModal.open()
 
   // TODO: Close the websocket?
 }
@@ -158,6 +172,9 @@ function event_ch_msg(data) {
 function event_adm_invit_link(data) {
   console.log('[Client] adm_invit_link')
   console.log(data)
+  let url = Config.web.url + "join/" + data.token
+  gui.invitLink = url
+  dom.invitLinkModal.open()
 }
 
 function event_ch_error(data) {
@@ -227,8 +244,15 @@ function handleKeyDown(event) {
   {/if}
 </div>
 
-<Modal bind:this={dom.modal} header={true} footer={true} overlayClose={true} title="Room Closed">
+<Modal bind:this={dom.closeModal} header={true} footer={true} overlayClose={true} title="Room Closed">
   <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
+</Modal>
+
+<Modal bind:this={dom.invitLinkModal} header={true} footer={false} overlayClose={true} title="Invitation Link">
+  <p class="mt-20">Link: {gui.invitLink}</p>
+  <p class="mt-40 text-center">
+    <button class="btn btn-primary" type="button" on:click={onClickCopy}>Copy</button>
+  </p>
 </Modal>
 
 

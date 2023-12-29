@@ -40,11 +40,6 @@ async function onClickInvit() {
 async function onClickClose() {
   emit('layout', {event: 'click_close', channel_id: channel.id})
 }
-
-async function onClickRoomLink() {
-  let url = Config.web.url + "join/" + channel.id
-  navigator.clipboard.writeText(url)
-}
 </script>
 
 
@@ -53,13 +48,11 @@ async function onClickRoomLink() {
     <header>
       <div class="text-left pl-15">
         {#if isOwner}
-          <button class="btn btn-action btn-small" type="button" on:click={onClickInvit}>Invit. Link</button>
+          <button class="btn btn-action btn-small" type="button" on:click={onClickInvit}>Invitation Link</button>
         {/if}
       </div>
       <div>
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-        <p class="clip" on:click={onClickRoomLink}>{headerTitle}</p>
+        <p>{headerTitle}</p>
       </div>
       <div class="text-right pr-15">
         {#if isOwner}
@@ -99,9 +92,6 @@ async function onClickRoomLink() {
 
     p
       margin-top: 5px
-
-    p.clip
-      cursor: pointer
 
   main
     padding: 20px

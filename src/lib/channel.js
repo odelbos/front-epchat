@@ -24,10 +24,6 @@ export default class Channel {
     })
   }
 
-  join(data={}) {
-    this.push('ch_join', data)
-  }
-
   leave() {
     // TODO: When user leave the channel
     // The channel will not be closed, the current user only leave
