@@ -13,6 +13,11 @@ if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
+//
+// TODO: When navigating from room to home, reset the header
+// Channel ivit/cloae button must not appear on the home page
+//
+
 if ( ! allReadySubscirbe) {
   subscribe('layout', (_topic, data) => {
     if (data.event === 'room_header') {
