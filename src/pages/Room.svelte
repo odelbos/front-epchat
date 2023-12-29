@@ -2,7 +2,7 @@
 import { getContext, onMount } from 'svelte'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
-import { emit } from '../stores/bus'
+import { emit, subscribe } from '../stores/bus'
 import { channel } from '../stores/data'
 import Socket from '../lib/socket'
 import Modal from '../components/Modal.svelte'
@@ -21,9 +21,25 @@ let messages = []
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
 
+// -----
+
 onMount(() => {
-  emit('layout', {event: 'channel', channel_id: $channel.id})
+  emit('layout', {event: 'room_header', channel_id: $channel.id})
 })
+
+subscribe('layout', (_topic, data) => {
+  if (data.event === 'click_invit') {
+    console.log('Receive layout.click_invit event, channel:', data.channel_id)
+  }
+})
+
+subscribe('layout', (_topic, data) => {
+  if (data.event === 'click_close') {
+    console.log('Receive layout.click_close event, channel:', data.channel_id)
+  }
+})
+
+// -----
 
 function onClickGotoHome() {
   router.navigate('home')
@@ -219,8 +235,9 @@ p
   grid-template-columns: 200px auto
   grid-template-rows: auto 90px
   grid-gap: 10px
-  height: calc(100vh - 35px - 35px - 20px - 20px)
-  // 100vh - header.height - footer.height - main.padding(top, bottom)
+  height: calc(100vh - 45px - 35px - 20px - 20px)
+  // NOTE: 100vh - header.height - footer.height - main.padding(top, bottom)
+  // TODO: move all that constants into css --var
 
 .users
   grid-column: 1
