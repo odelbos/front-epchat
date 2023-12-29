@@ -8,19 +8,18 @@ let channel = null
 let isOwner = false
 let allReadySubscirbe = false
 
-let user = null
-if (LocalStorageService.hasUser()) {
-  user = LocalStorageService.getUser()
-}
-
 //
 // TODO: When navigating from room to home, reset the header
-// Channel ivit/cloae button must not appear on the home page
+// Channel invit/cloae button must not appear on the home page
 //
 
 if ( ! allReadySubscirbe) {
   subscribe('layout', (_topic, data) => {
     if (data.event === 'room_header') {
+      let user = null
+      if (LocalStorageService.hasUser()) {
+        user = LocalStorageService.getUser()
+      }
       channel = data.channel
       headerTitle = 'Room: ' + data.channel.id.substring(0, 8)
       if (user !== null) {
