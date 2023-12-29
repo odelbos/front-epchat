@@ -1,8 +1,8 @@
 <script>
 import { getContext, onMount } from 'svelte'
+import { emit, subscribe } from '../stores/bus'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
-import { emit, subscribe } from '../stores/bus'
 import { channel } from '../stores/data'
 import Socket from '../lib/socket'
 import Modal from '../components/Modal.svelte'
@@ -21,10 +21,11 @@ let messages = []
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
 
+console.log($channel)
 // -----
 
 onMount(() => {
-  emit('layout', {event: 'room_header', channel_id: $channel.id})
+  emit('layout', {event: 'room_header', channel: $channel})
 })
 
 subscribe('layout', (_topic, data) => {
@@ -213,7 +214,7 @@ function handleKeyDown(event) {
 </div>
 
 <Modal bind:this={dom.modal} header={true} footer={true} overlayClose={true} title="Room Closed">
-  <p class="mt-20">The chat rooom has been closed be the server because of reaching 10mn of inactivity.</p>
+  <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
 </Modal>
 
 

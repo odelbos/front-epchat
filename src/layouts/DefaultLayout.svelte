@@ -1,39 +1,55 @@
 <script>
 import Config from '../config'
 import { emit, subscribe } from '../stores/bus'
+import LocalStorageService from '../services/local_storage_service'
 
 let headerTitle = 'EpChat'
-let channelId = null
+let channel = null
+let isOwner = false
 
-function onClickRoomLink(_e) {
-  let url = Config.web.url + "join/" + channelId
-  navigator.clipboard.writeText(url)
+let user = null
+if (LocalStorageService.hasUser()) {
+  user = LocalStorageService.getUser()
 }
 
+//
+// TODO: Becarefull to multiple of subsriptions
+//
 subscribe('layout', (_topic, data) => {
   if (data.event === 'room_header') {
-    channelId = data.channel_id
-    headerTitle = 'Room: ' + data.channel_id.substring(0, 8)
+    channel = data.channel
+    headerTitle = 'Room: ' + data.channel.id.substring(0, 8)
+    if (user !== null) {
+      isOwner = (channel.owner_id === user.id)
+    }
+    // TODO: user === null should never happens here
   }
 })
 
 // -----
 
 async function onClickInvit() {
-  emit('layout', {event: 'click_invit', channel_id: channelId})
+  emit('layout', {event: 'click_invit', channel_id: channel.id})
 }
 
 async function onClickClose() {
-  emit('layout', {event: 'click_close', channel_id: channelId})
+  emit('layout', {event: 'click_close', channel_id: channel.id})
+}
+
+async function onClickRoomLink() {
+  let url = Config.web.url + "join/" + channel.id
+  navigator.clipboard.writeText(url)
 }
 </script>
 
 
 <div class="wrapper">
-  {#if channelId !== null}
+  {#if channel !== null}
     <header>
       <div class="text-left pl-15">
-        <button class="btn btn-action btn-small" type="button" on:click={onClickInvit}>Invit. Link</button>
+        {#if isOwner}
+          <button class="btn btn-action btn-small" type="button" on:click={onClickInvit}>Invit. Link</button>
+        {/if}
       </div>
       <div>
         <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -41,7 +57,9 @@ async function onClickClose() {
         <p class="clip" on:click={onClickRoomLink}>{headerTitle}</p>
       </div>
       <div class="text-right pr-15">
-        <button class="btn btn-danger btn-small" type="button" on:click={onClickClose}>Close</button>
+        {#if isOwner}
+          <button class="btn btn-danger btn-small" type="button" on:click={onClickClose}>Close</button>
+        {/if}
       </div>
     </header>
   {:else}
