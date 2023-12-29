@@ -115,6 +115,8 @@ chann.on('ch_member_leave', (data) => { event_ch_member_leave(data) })
 
 chann.on('ch_msg', (data) => { event_ch_msg(data) })
 
+chann.on('adm_invit_link', (data) => { event_adm_invit_link(data) })
+
 sock.connect()
 
 // -----
@@ -149,6 +151,11 @@ function event_ch_msg(data) {
 
   // NOTE: Wait redraw before auto-scrolling the message list
   setTimeout(() => {dom.messages.scrollTop = dom.messages.scrollHeight}, 100)
+}
+
+function event_adm_invit_link(data) {
+  console.log('[Client] adm_invit_link')
+  console.log(data)
 }
 
 // -----
