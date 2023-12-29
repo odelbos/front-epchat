@@ -117,6 +117,8 @@ chann.on('ch_msg', (data) => { event_ch_msg(data) })
 
 chann.on('adm_invit_link', (data) => { event_adm_invit_link(data) })
 
+chann.on('ch_error', (data) => { event_ch_error(data) })
+
 sock.connect()
 
 // -----
@@ -156,6 +158,14 @@ function event_ch_msg(data) {
 function event_adm_invit_link(data) {
   console.log('[Client] adm_invit_link')
   console.log(data)
+}
+
+function event_ch_error(data) {
+  console.log('[Client] ch_error')
+  console.log(data)
+  //
+  // TODO: Implement 'ch_error' event
+  //
 }
 
 // -----
