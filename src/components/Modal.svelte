@@ -1,10 +1,14 @@
 <script>
+import { createEventDispatcher } from 'svelte'
+
+const dispatch = createEventDispatcher()
+
 let dialog
 
 export let header = false
-export let footer = false
-export let overlayClose = false
 export let title = ''
+export let footer = 'none'        // none, close, yes-no
+export let overlayClose = false
 
 export function toggle() { dialog.open ? close() : open()	}
 export function open()   { dialog.showModal() }
@@ -12,6 +16,11 @@ export function close()  { dialog.close() }
 
 async function onClickDialog() {
   if (overlayClose) dialog.close()
+}
+
+async function onClickYes() {
+  dispatch('click-yes', {})
+  dialog.close()
 }
 </script>
 
@@ -29,10 +38,18 @@ async function onClickDialog() {
     <div class="content">
       <slot/>
     </div>
-    {#if footer}
+    {#if footer === 'close'}
       <footer>
         <form method="dialog">
           <button class="btn btn-primary" type="button" on:click={() => dialog.close()}>Close</button>
+        </form>
+      </footer>
+    {/if}
+    {#if footer === 'yes-no'}
+      <footer>
+        <form method="dialog">
+          <button class="btn btn-primary" type="button" on:click={() => dialog.close()}>Cancel</button>
+          <button class="btn btn-danger" type="button" on:click={onClickYes}>Yes</button>
         </form>
       </footer>
     {/if}
