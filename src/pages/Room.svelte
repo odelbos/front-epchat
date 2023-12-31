@@ -31,15 +31,17 @@ subscribe('layout', (_topic, data) => {
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_close') {
-    console.log('Room receive layout.click_close event, channel:', data.channel_id)
-    // TODO: Implement 'layout.click_close' event
+    confirmModal.text = 'Are you sure you want to close the Chat Room?'
+    confirmModal.yesCallback = onConfirmClose
+    confirmModal.dom.open()
   }
 })
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_leave') {
-    console.log('Room receive layout.click_leave event, channel:', data.channel_id)
-    // TODO: Implement 'layout.click_leave' event
+    confirmModal.text = 'Are you sure you want to leave the Chat Room?'
+    confirmModal.yesCallback = onConfirmLeave
+    confirmModal.dom.open()
   }
 })
 
@@ -56,9 +58,27 @@ async function onClickCopy() {
 
 // -----
 
+async function onConfirmLeave() {
+  console.log('On click confirm leave Yes !')
+  // TODO: Implement leave Chat Room
+}
+
+async function onConfirmClose() {
+  console.log('On click confirm close Yes !')
+  // TODO: Implement close Chat Room
+}
+
+// -----
+
 let gui = {
   isChannelClosed: false,
   invitLink: '',
+}
+
+let confirmModal = {
+  dom: null,
+  text: 'Are you sure?',
+  yesCallback: null,
 }
 
 let dom = {
@@ -209,7 +229,6 @@ function handleKeyDown(event) {
     let data = {
       msg: form.msg,
     }
-    console.log('-----> send ch_msg')
     chann.push("ch_msg", data)
 
     // NOTE: Wait before cleaning textarea otherwise the return line stay there
@@ -251,15 +270,19 @@ function handleKeyDown(event) {
   {/if}
 </div>
 
-<Modal bind:this={dom.closeModal} header={true} footer={true} overlayClose={true} title="Room Closed">
+<Modal bind:this={dom.closeModal} header={true} footer={'close'} overlayClose={true} title="Room Closed">
   <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
 </Modal>
 
-<Modal bind:this={dom.invitLinkModal} header={true} footer={false} overlayClose={true} title="Invitation Link">
+<Modal bind:this={dom.invitLinkModal} header={true} overlayClose={true} title="Invitation Link">
   <p class="mt-20">Link: {gui.invitLink}</p>
   <p class="mt-40 text-center">
     <button class="btn btn-primary" type="button" on:click={onClickCopy}>Copy</button>
   </p>
+</Modal>
+
+<Modal bind:this={confirmModal.dom} header={true} footer={'yes-no'} overlayClose={true} on:click-yes={confirmModal.yesCallback} title="Confirm">
+  <p class="mt-20 text-center">{confirmModal.text}</p>
 </Modal>
 
 
