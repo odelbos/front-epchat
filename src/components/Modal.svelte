@@ -12,15 +12,18 @@ export let overlayClose = false
 
 export function toggle() { dialog.open ? close() : open()	}
 export function open()   { dialog.showModal() }
-export function close()  { dialog.close() }
+export function close()  {
+  dispatch('click-close', {})
+  dialog.close()
+}
 
 async function onClickDialog() {
-  if (overlayClose) dialog.close()
+  if (overlayClose) close()
 }
 
 async function onClickYes() {
   dispatch('click-yes', {})
-  dialog.close()
+  close()
 }
 </script>
 
@@ -41,14 +44,14 @@ async function onClickYes() {
     {#if footer === 'close'}
       <footer>
         <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={() => dialog.close()}>Close</button>
+          <button class="btn btn-primary" type="button" on:click={close}>Close</button>
         </form>
       </footer>
     {/if}
     {#if footer === 'yes-no'}
       <footer>
         <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={() => dialog.close()}>Cancel</button>
+          <button class="btn btn-primary" type="button" on:click={close}>Cancel</button>
           <button class="btn btn-danger" type="button" on:click={onClickYes}>Yes</button>
         </form>
       </footer>
