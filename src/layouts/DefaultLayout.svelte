@@ -40,6 +40,10 @@ async function onClickInvit() {
 async function onClickClose() {
   emit('layout', {event: 'click_close', channel_id: channel.id})
 }
+
+async function onClickLeave() {
+  emit('layout', {event: 'click_leave', channel_id: channel.id})
+}
 </script>
 
 
@@ -56,7 +60,10 @@ async function onClickClose() {
       </div>
       <div class="text-right pr-15">
         {#if isOwner}
+          <button class="btn btn-danger btn-small" type="button" on:click={onClickLeave}>Leave</button>
           <button class="btn btn-danger btn-small" type="button" on:click={onClickClose}>Close</button>
+        {:else}
+          <button class="btn btn-danger btn-small" type="button" on:click={onClickLeave}>Leave</button>
         {/if}
       </div>
     </header>

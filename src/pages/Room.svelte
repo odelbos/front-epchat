@@ -36,6 +36,13 @@ subscribe('layout', (_topic, data) => {
   }
 })
 
+subscribe('layout', (_topic, data) => {
+  if (data.event === 'click_leave') {
+    console.log('Room receive layout.click_leave event, channel:', data.channel_id)
+    // TODO: Implement 'layout.click_leave' event
+  }
+})
+
 // -----
 
 async function onClickGotoHome() {
