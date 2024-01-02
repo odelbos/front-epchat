@@ -21,6 +21,7 @@ let dom = {
 }
 
 // -----
+
 async function onClickValid(e) {
   let data = {
     nickname: e.detail.nickname,
@@ -47,8 +48,7 @@ async function onClickValid(e) {
   }
 }
 
-async function onClickClose() {
-  console.log('Go to home page')
+async function onClickGotoHome() {
   router.navigate('home')
 }
 </script>
@@ -58,7 +58,9 @@ async function onClickClose() {
   <Nickname btnTitle="Join Chat Room" on:click-valid={onClickValid}/>
 </div>
 
-<Modal bind:this={dom.invalidModal} header={true} footer={'close'} overlayClose={true} on:click-close={onClickClose} title="Error">
+<Modal bind:this={dom.invalidModal} title="Error" titleClass="error">
   <p class="mt-20 text-center">Invalid token.</p>
+  <div slot="footer">
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickGotoHome}>Got to Home</button>
+  </div>
 </Modal>
-

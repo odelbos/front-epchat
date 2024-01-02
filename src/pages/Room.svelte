@@ -14,12 +14,35 @@ if (LocalStorageService.hasUser()) {
   user = LocalStorageService.getUser()
 }
 
-let members = []
-let messages = []
-
 // NOTE: Should never happens when entering this page
 if (user === null) router.navigate('home')
 if ($channel === null) router.navigate('home')
+
+// -----
+
+let members = []
+let messages = []
+
+let gui = {
+  isChannelClosed: false,
+  invitLink: '',
+}
+
+let confirmModal = {
+  dom: null,
+  text: 'Are you sure?',
+  mode: 'leave',                 // leave || close
+}
+
+let dom = {
+  messages: null,
+  closeModal: null,
+  invitLinkModal: null,
+}
+
+let form = {
+  msg: '',
+}
 
 // -----
 
@@ -31,24 +54,42 @@ subscribe('layout', (_topic, data) => {
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_close') {
+    confirmModal.mode = 'close'
     confirmModal.text = 'Are you sure you want to close the Chat Room?'
-    confirmModal.yesCallback = onConfirmClose
     confirmModal.dom.open()
   }
 })
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_leave') {
+    confirmModal.mode = 'leave'
     confirmModal.text = 'Are you sure you want to leave the Chat Room?'
-    confirmModal.yesCallback = onConfirmLeave
     confirmModal.dom.open()
   }
 })
 
 // -----
 
-async function onClickGotoHome() {
-  router.navigate('home')
+async function onClickConfirmModalCancel() {
+  confirmModal.dom.close()
+}
+
+async function onClickConfirmModalYes() {
+  if (confirmModal.mode === 'leave') {
+    console.log('On click confirm leave yes !')
+    // TODO: Implement leave Chat Room
+  }
+  else if (confirmModal.mode === 'close') {
+    console.log('On click confirm close yes !')
+    // TODO: Implement close Chat Room
+  }
+  confirmModal.dom.close()
+}
+
+// -----
+
+async function onClickCloseModal() {
+  dom.closeModal.close()
 }
 
 async function onClickCopy() {
@@ -56,39 +97,8 @@ async function onClickCopy() {
   dom.invitLinkModal.close()
 }
 
-// -----
-
-async function onConfirmLeave() {
-  console.log('On click confirm leave Yes !')
-  // TODO: Implement leave Chat Room
-}
-
-async function onConfirmClose() {
-  console.log('On click confirm close Yes !')
-  // TODO: Implement close Chat Room
-}
-
-// -----
-
-let gui = {
-  isChannelClosed: false,
-  invitLink: '',
-}
-
-let confirmModal = {
-  dom: null,
-  text: 'Are you sure?',
-  yesCallback: null,
-}
-
-let dom = {
-  messages: null,
-  closeModal: null,
-  invitLinkModal: null,
-}
-
-let form = {
-  msg: '',
+async function onClickGotoHome() {
+  router.navigate('home')
 }
 
 
@@ -126,7 +136,7 @@ sock.onError = (error) => {
 chann.onJoin = (data) => {
   console.log('[Client] Join channel')
   console.log(data)
-  emit('layout', {event: 'room_header', channel: $channel})
+  emit('layout', {event: 'channel.open', channel: $channel})
   chann.push('ch_members')
 }
 
@@ -142,6 +152,7 @@ chann.onClose = (data) => {
     console.log('Unknown reason')
   }
 
+  emit('layout', {event: 'channel.closed', channel: $channel})
   gui.isChannelClosed = true
   dom.closeModal.open()
 
@@ -270,19 +281,26 @@ function handleKeyDown(event) {
   {/if}
 </div>
 
-<Modal bind:this={dom.closeModal} header={true} footer={'close'} overlayClose={true} title="Room Closed">
+<Modal bind:this={dom.closeModal} overlayClose={true} title="Room Closed">
   <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
+  <div slot="footer">
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickCloseModal}>Close</button>
+  </div>
 </Modal>
 
-<Modal bind:this={dom.invitLinkModal} header={true} overlayClose={true} title="Invitation Link">
+<Modal bind:this={dom.invitLinkModal} title="Invitation Link">
   <p class="mt-20">Link: {gui.invitLink}</p>
   <p class="mt-40 text-center">
     <button class="btn btn-primary" type="button" on:click={onClickCopy}>Copy</button>
   </p>
 </Modal>
 
-<Modal bind:this={confirmModal.dom} header={true} footer={'yes-no'} overlayClose={true} on:click-yes={confirmModal.yesCallback} title="Confirm">
+<Modal bind:this={confirmModal.dom} title="Confirm">
   <p class="mt-20 text-center">{confirmModal.text}</p>
+  <div slot="footer">
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickConfirmModalCancel}>Cancel</button>
+    <button class="btn btn-small btn-danger" type="button" on:click={onClickConfirmModalYes}>Yes</button>
+  </div>
 </Modal>
 
 

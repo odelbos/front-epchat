@@ -3,27 +3,23 @@ import { createEventDispatcher } from 'svelte'
 
 const dispatch = createEventDispatcher()
 
+// -----
+
 let dialog
 
-export let header = false
-export let title = ''
-export let footer = 'none'        // none, close, yes-no
+export let title = null
+export let titleClass = null
 export let overlayClose = false
 
 export function toggle() { dialog.open ? close() : open()	}
 export function open()   { dialog.showModal() }
-export function close()  {
-  dispatch('click-close', {})
-  dialog.close()
-}
+export function close()  { dialog.close() }
 
 async function onClickDialog() {
-  if (overlayClose) close()
-}
-
-async function onClickYes() {
-  dispatch('click-yes', {})
-  close()
+  if (overlayClose) {
+    dispatch('close', {})
+    close()
+  }
 }
 </script>
 
@@ -33,26 +29,18 @@ async function onClickYes() {
 <dialog bind:this={dialog} on:click|self={onClickDialog}>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="wrapper" on:click|stopPropagation>
-    {#if header}
-      <header>
+    {#if title !== null}
+      <header class={titleClass}>
         <p>{title}</p>
       </header>
     {/if}
     <div class="content">
       <slot/>
     </div>
-    {#if footer === 'close'}
+    {#if $$slots.footer}
       <footer>
         <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={close}>Close</button>
-        </form>
-      </footer>
-    {/if}
-    {#if footer === 'yes-no'}
-      <footer>
-        <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={close}>Cancel</button>
-          <button class="btn btn-danger" type="button" on:click={onClickYes}>Yes</button>
+          <slot name="footer"/>
         </form>
       </footer>
     {/if}
@@ -91,6 +79,10 @@ header
   background: #95b1d0
   padding: 10px
 
+  &.error, &.danger
+    background: var(--error-color)
+    color: white
+
   p
     text-align: center
 
@@ -98,9 +90,6 @@ footer
   text-align: center
   padding-top: 10px
   padding-bottom: 15px
-
-  button
-    padding: 5px 20px
 
 dialog[open]
   animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)

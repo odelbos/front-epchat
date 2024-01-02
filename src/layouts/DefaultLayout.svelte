@@ -15,7 +15,7 @@ let allReadySubscirbe = false
 
 if ( ! allReadySubscirbe) {
   subscribe('layout', (_topic, data) => {
-    if (data.event === 'room_header') {
+    if (data.event === 'channel.open') {
       let user = null
       if (LocalStorageService.hasUser()) {
         user = LocalStorageService.getUser()
@@ -26,6 +26,9 @@ if ( ! allReadySubscirbe) {
         isOwner = (channel.owner_id === user.id)
       }
       // TODO: user === null should never happens here
+    }
+    else if (data.event === 'channel.closed') {
+      channel = null
     }
     allReadySubscirbe = true
   })
