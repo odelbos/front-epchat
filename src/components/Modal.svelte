@@ -3,26 +3,57 @@ import { createEventDispatcher } from 'svelte'
 
 const dispatch = createEventDispatcher()
 
+const defaultConfig = {
+  header: {
+    show: false,
+    title: '',
+  },
+  footer: {
+    show: false,
+    btnLeft: false,
+    btnLeftText: 'Cancel',
+    btnLeftClass: 'primary',
+    btnRight: false,
+    btnRightText: 'Close',
+    btnRightClass: 'primary',
+  },
+  overlay: {
+    close: false,
+  },
+}
+
+// -----
+
 let dialog
 
-export let header = false
-export let title = ''
-export let footer = 'none'        // none, close, yes-no
-export let overlayClose = false
+export let settings = {}
+
+let config = {}
+const getConfig = () => settings
+$: config = {
+  header: {...defaultConfig.header, ...(getConfig().header)},
+  footer: {...defaultConfig.footer, ...(getConfig().footer)},
+  overlay: {...defaultConfig.overlay, ...(getConfig().overlay)},
+}
 
 export function toggle() { dialog.open ? close() : open()	}
 export function open()   { dialog.showModal() }
 export function close()  {
-  dispatch('click-close', {})
+  dispatch('close', {})
   dialog.close()
 }
 
 async function onClickDialog() {
-  if (overlayClose) close()
+  if (config.overlay.close) close()
 }
 
-async function onClickYes() {
-  dispatch('click-yes', {})
+async function onClickLeft() {
+  dispatch('click-left', {})
+  close()
+}
+
+async function onClickRight() {
+  dispatch('click-right', {})
   close()
 }
 </script>
@@ -33,26 +64,24 @@ async function onClickYes() {
 <dialog bind:this={dialog} on:click|self={onClickDialog}>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="wrapper" on:click|stopPropagation>
-    {#if header}
+    {#if config.header.show}
       <header>
-        <p>{title}</p>
+        <p>{config.header.title}</p>
       </header>
     {/if}
     <div class="content">
       <slot/>
     </div>
-    {#if footer === 'close'}
+
+    {#if config.footer.show}
       <footer>
         <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={close}>Close</button>
-        </form>
-      </footer>
-    {/if}
-    {#if footer === 'yes-no'}
-      <footer>
-        <form method="dialog">
-          <button class="btn btn-primary" type="button" on:click={close}>Cancel</button>
-          <button class="btn btn-danger" type="button" on:click={onClickYes}>Yes</button>
+          {#if config.footer.btnLeft}
+            <button class="btn btn-small btn-{config.footer.btnLeftClass}" type="button" on:click={onClickLeft}>{config.footer.btnLeftText}</button>
+          {/if}
+          {#if config.footer.btnRight}
+            <button class="btn btn-small btn-{config.footer.btnRightClass}" type="button" on:click={onClickRight}>{config.footer.btnRightText}</button>
+          {/if}
         </form>
       </footer>
     {/if}
@@ -98,9 +127,6 @@ footer
   text-align: center
   padding-top: 10px
   padding-bottom: 15px
-
-  button
-    padding: 5px 20px
 
 dialog[open]
   animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)
