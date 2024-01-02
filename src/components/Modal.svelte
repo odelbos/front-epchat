@@ -39,9 +39,7 @@ async function onClickDialog() {
     </div>
     {#if $$slots.footer}
       <footer>
-        <form method="dialog">
-          <slot name="footer"/>
-        </form>
+        <slot name="footer"/>
       </footer>
     {/if}
   </div>
