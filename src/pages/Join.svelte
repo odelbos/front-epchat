@@ -20,19 +20,6 @@ let dom = {
   invalidModal: null,
 }
 
-const modalConfig = {
-  header: {
-    show: true,
-    title: 'Error',
-  },
-
-  footer: {
-    show: true,
-    btnLeft: true,
-    btnLeftText: 'Go to Home',
-  },
-}
-
 // -----
 
 async function onClickValid(e) {
@@ -61,7 +48,7 @@ async function onClickValid(e) {
   }
 }
 
-async function onGotoHome() {
+async function onClickGotoHome() {
   router.navigate('home')
 }
 </script>
@@ -71,6 +58,9 @@ async function onGotoHome() {
   <Nickname btnTitle="Join Chat Room" on:click-valid={onClickValid}/>
 </div>
 
-<Modal bind:this={dom.invalidModal} settings={modalConfig} on:click-left={onGotoHome}>
+<Modal bind:this={dom.invalidModal} title="Error" titleClass="error">
   <p class="mt-20 text-center">Invalid token.</p>
+  <div slot="footer">
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickGotoHome}>Got to Home</button>
+  </div>
 </Modal>

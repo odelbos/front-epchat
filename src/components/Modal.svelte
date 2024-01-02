@@ -3,58 +3,23 @@ import { createEventDispatcher } from 'svelte'
 
 const dispatch = createEventDispatcher()
 
-const defaultConfig = {
-  header: {
-    show: false,
-    title: '',
-  },
-  footer: {
-    show: false,
-    btnLeft: false,
-    btnLeftText: 'Cancel',
-    btnLeftClass: 'primary',
-    btnRight: false,
-    btnRightText: 'Close',
-    btnRightClass: 'primary',
-  },
-  overlay: {
-    close: false,
-  },
-}
-
 // -----
 
 let dialog
 
-export let settings = {}
-
-let config = {}
-const getConfig = () => settings
-$: config = {
-  header: {...defaultConfig.header, ...(getConfig().header)},
-  footer: {...defaultConfig.footer, ...(getConfig().footer)},
-  overlay: {...defaultConfig.overlay, ...(getConfig().overlay)},
-}
+export let title = null
+export let titleClass = null
+export let overlayClose = false
 
 export function toggle() { dialog.open ? close() : open()	}
 export function open()   { dialog.showModal() }
-export function close()  {
-  dispatch('close', {})
-  dialog.close()
-}
+export function close()  { dialog.close() }
 
 async function onClickDialog() {
-  if (config.overlay.close) close()
-}
-
-async function onClickLeft() {
-  dispatch('click-left', {})
-  close()
-}
-
-async function onClickRight() {
-  dispatch('click-right', {})
-  close()
+  if (overlayClose) {
+    dispatch('close', {})
+    close()
+  }
 }
 </script>
 
@@ -64,24 +29,18 @@ async function onClickRight() {
 <dialog bind:this={dialog} on:click|self={onClickDialog}>
   <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="wrapper" on:click|stopPropagation>
-    {#if config.header.show}
-      <header>
-        <p>{config.header.title}</p>
+    {#if title !== null}
+      <header class={titleClass}>
+        <p>{title}</p>
       </header>
     {/if}
     <div class="content">
       <slot/>
     </div>
-
-    {#if config.footer.show}
+    {#if $$slots.footer}
       <footer>
         <form method="dialog">
-          {#if config.footer.btnLeft}
-            <button class="btn btn-small btn-{config.footer.btnLeftClass}" type="button" on:click={onClickLeft}>{config.footer.btnLeftText}</button>
-          {/if}
-          {#if config.footer.btnRight}
-            <button class="btn btn-small btn-{config.footer.btnRightClass}" type="button" on:click={onClickRight}>{config.footer.btnRightText}</button>
-          {/if}
+          <slot name="footer"/>
         </form>
       </footer>
     {/if}
@@ -119,6 +78,10 @@ dialog
 header
   background: #95b1d0
   padding: 10px
+
+  &.error, &.danger
+    background: var(--error-color)
+    color: white
 
   p
     text-align: center
