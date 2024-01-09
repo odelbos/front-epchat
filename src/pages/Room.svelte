@@ -36,8 +36,9 @@ let confirmModal = {
 
 let dom = {
   messages: null,
-  closeModal: null,
+  roomClosedModal: null,
   invitLinkModal: null,
+  limitModal: null,
 }
 
 let form = {
@@ -74,6 +75,10 @@ async function onClickConfirmModalCancel() {
   confirmModal.dom.close()
 }
 
+async function onClickErrorModalClose() {
+  dom.limitModal.close()
+}
+
 async function onClickConfirmModalYes() {
   if (confirmModal.mode === 'leave') {
     console.log('On click confirm leave yes !')
@@ -89,7 +94,7 @@ async function onClickConfirmModalYes() {
 // -----
 
 async function onClickCloseModal() {
-  dom.closeModal.close()
+  dom.roomClosedModal.close()
 }
 
 async function onClickCopy() {
@@ -154,7 +159,7 @@ chann.onClose = (data) => {
 
   emit('layout', {event: 'channel.closed', channel: $channel})
   gui.isChannelClosed = true
-  dom.closeModal.open()
+  dom.roomClosedModal.open()
 
   // TODO: Close the websocket?
 }
@@ -221,6 +226,14 @@ function event_ch_error(data) {
   //
   // TODO: Implement 'ch_error' event
   //
+  if (data.code === 403) {
+    if (data.tag === 'tokens_limit') {
+      dom.limitModal.open()
+    }
+    else if (data.tag === 'members_limit') {
+      dom.limitModal.open()
+    }
+  }
 }
 
 // -----
@@ -281,7 +294,7 @@ function handleKeyDown(event) {
   {/if}
 </div>
 
-<Modal bind:this={dom.closeModal} overlayClose={true} title="Room Closed">
+<Modal bind:this={dom.roomClosedModal} overlayClose={true} title="Room Closed">
   <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
   <div slot="footer">
     <button class="btn btn-small btn-primary" type="button" on:click={onClickCloseModal}>Close</button>
@@ -291,7 +304,7 @@ function handleKeyDown(event) {
 <Modal bind:this={dom.invitLinkModal} title="Invitation Link">
   <p class="mt-20">Link: {gui.invitLink}</p>
   <p class="mt-40 text-center">
-    <button class="btn btn-primary" type="button" on:click={onClickCopy}>Copy</button>
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickCopy}>Copy</button>
   </p>
 </Modal>
 
@@ -300,6 +313,14 @@ function handleKeyDown(event) {
   <div slot="footer">
     <button class="btn btn-small btn-primary" type="button" on:click={onClickConfirmModalCancel}>Cancel</button>
     <button class="btn btn-small btn-danger" type="button" on:click={onClickConfirmModalYes}>Yes</button>
+  </div>
+</Modal>
+
+<Modal bind:this={dom.limitModal} title="Error" titleClass="danger" overlayClose={true}>
+  <p class="mt-20 text-center"> You can't generate more invitation links. </p>
+  <p class="mt-20 text-center">Room are limited to 10 members.</p>
+  <div slot="footer">
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickErrorModalClose}>Close</button>
   </div>
 </Modal>
 
