@@ -1,5 +1,5 @@
 <script>
-import { getContext } from 'svelte'
+import { getContext, onDestroy } from 'svelte'
 import { emit, subscribe } from '../stores/bus'
 import Config from '../config'
 import LocalStorageService from '../services/local_storage_service'
@@ -26,6 +26,7 @@ let messages = []
 let gui = {
   isChannelClosed: false,
   invitLink: '',
+  closedText: '',
 }
 
 let confirmModal = {
@@ -34,9 +35,13 @@ let confirmModal = {
   mode: 'leave',                 // leave || close
 }
 
+let roomClosedModal = {
+  dom: null,
+  text: 'Room closed',
+}
+
 let dom = {
   messages: null,
-  roomClosedModal: null,
   invitLinkModal: null,
   limitModal: null,
 }
@@ -46,6 +51,10 @@ let form = {
 }
 
 // -----
+
+//
+// TODO: Becarefull of multiple subscription
+//
 
 subscribe('layout', (_topic, data) => {
   if (data.event === 'click_invit') {
@@ -75,26 +84,25 @@ async function onClickConfirmModalCancel() {
   confirmModal.dom.close()
 }
 
-async function onClickErrorModalClose() {
-  dom.limitModal.close()
-}
-
 async function onClickConfirmModalYes() {
   if (confirmModal.mode === 'leave') {
-    console.log('On click confirm leave yes !')
-    // TODO: Implement leave Chat Room
+    router.navigate('home')
   }
   else if (confirmModal.mode === 'close') {
     console.log('On click confirm close yes !')
-    // TODO: Implement close Chat Room
+    chann.push('adm_close', {user_id: user.id})
   }
   confirmModal.dom.close()
 }
 
+async function onClickLimitModalClose() {
+  dom.limitModal.close()
+}
+
 // -----
 
-async function onClickCloseModal() {
-  dom.roomClosedModal.close()
+async function onClickRoomClosedModalClose() {
+  roomClosedModal.dom.close()
 }
 
 async function onClickCopy() {
@@ -127,11 +135,13 @@ sock.onOpen = (_event) => {
 }
 
 sock.onClose = (event) => {
+  // TODO: Manage websocket close
   console.log('[Client] Socket Close')
   console.log(event)
 }
 
 sock.onError = (error) => {
+  // TODO: Manage websocket error
   console.log('[Client] Socket Error')
   console.log(error)
 }
@@ -150,33 +160,43 @@ chann.onClose = (data) => {
   console.log(data)
 
   if (data.reason === 'ch_no_activity') {
-    // TODO: Set the message
-    console.log('Closed because of inactivity')
+    gui.closedText = 'No activity since 10mn'
+    roomClosedModal.text = 'The chat rooom has been closed by the server because of reaching 10mn of inactivity.'
+  }
+  else if (data.reason === 'adm_closed') {
+    gui.closedText = 'Closed by Administrator'
+    roomClosedModal.text = 'The administrator closed the room.'
   }
   else {
-    console.log('Unknown reason')
+    gui.closedText = 'Unknown reason'
+    roomClosedModal.text = 'The room has been closed with unknown reason.'
   }
 
   emit('layout', {event: 'channel.closed', channel: $channel})
   gui.isChannelClosed = true
-  dom.roomClosedModal.open()
+  roomClosedModal.dom.open()
 
   // TODO: Close the websocket?
 }
 
-chann.on('ch_members', (data) => { event_ch_members(data) })
+chann.on('ch_members',       (data) => { event_ch_members(data) })
 
-chann.on('ch_member_join', (data) => { event_ch_member_join(data) })
+chann.on('ch_member_join',   (data) => { event_ch_member_join(data) })
 
-chann.on('ch_member_leave', (data) => { event_ch_member_leave(data) })
+chann.on('ch_member_leave',  (data) => { event_ch_member_leave(data) })
 
-chann.on('ch_msg', (data) => { event_ch_msg(data) })
+chann.on('ch_msg',           (data) => { event_ch_msg(data) })
 
-chann.on('adm_invit_link', (data) => { event_adm_invit_link(data) })
+chann.on('adm_invit_link',   (data) => { event_adm_invit_link(data) })
 
-chann.on('ch_error', (data) => { event_ch_error(data) })
+chann.on('ch_error',         (data) => { event_ch_error(data) })
 
 sock.connect()
+
+onDestroy(() => {
+  emit('layout', {event: 'channel.closed', channel: $channel})
+  sock.close()
+});
 
 // -----
 
@@ -266,7 +286,7 @@ function handleKeyDown(event) {
   <div class="users block">
     {#if gui.isChannelClosed}
       <p class="closed">Room Closed</p>
-      <p class="mt-20 text-italic text-sm">No activity since 10mn</p>
+      <p class="mt-20 text-italic text-sm">{gui.closedText}</p>
     {:else}
       {#each members as member}
         <p>{member.nickname}</p>
@@ -294,10 +314,10 @@ function handleKeyDown(event) {
   {/if}
 </div>
 
-<Modal bind:this={dom.roomClosedModal} overlayClose={true} title="Room Closed">
-  <p class="mt-20">The chat rooom has been closed by the server because of reaching 10mn of inactivity.</p>
+<Modal bind:this={roomClosedModal.dom} overlayClose={true} title="Room Closed">
+  <p class="mt-20 text-center">{roomClosedModal.text}</p>
   <div slot="footer">
-    <button class="btn btn-small btn-primary" type="button" on:click={onClickCloseModal}>Close</button>
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickRoomClosedModalClose}>Close</button>
   </div>
 </Modal>
 
@@ -320,7 +340,7 @@ function handleKeyDown(event) {
   <p class="mt-20 text-center"> You can't generate more invitation links. </p>
   <p class="mt-20 text-center">Room are limited to 10 members.</p>
   <div slot="footer">
-    <button class="btn btn-small btn-primary" type="button" on:click={onClickErrorModalClose}>Close</button>
+    <button class="btn btn-small btn-primary" type="button" on:click={onClickLimitModalClose}>Close</button>
   </div>
 </Modal>
 
