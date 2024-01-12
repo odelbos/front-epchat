@@ -34,6 +34,7 @@ export default class Socket {
   }
 
   close() {
+    this.#sock.close(1000, 'End')
   }
 
   push(data) {
